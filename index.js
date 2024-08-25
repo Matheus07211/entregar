@@ -12,8 +12,8 @@ app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.use('/categoria',rotaAutor);
-app.use('/produto',rotaLivro);
+app.use('/autor',rotaAutor);
+app.use('/livro',rotaLivro);
 
 app.listen(porta, host, ()=>{
     console.log(`Servidor escutando na porta ${host}:${porta}.`);
