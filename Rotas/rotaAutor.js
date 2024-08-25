@@ -7,7 +7,7 @@ import AutorCtrl from "../Controle/autorCtrl.js";
 const autCtrl = new AutorCtrl();
 const rotaAutor = new Router();
 
-rotaCategoria
+rotaAutor
 .get('/',autCtrl.consultar)
 .get('/:termo', autCtrl.consultar)
 .post('/',autCtrl.gravar)

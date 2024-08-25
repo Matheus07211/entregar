@@ -1,8 +1,8 @@
-import Produto from '../Modelo/produto.js';
-import Categoria from '../Modelo/categoria.js';
+import Livro from '../Modelo/livro.js';
+import Autor from '../Modelo/autor.js';
 import conectar from './conexao.js';
 
-export default class ProdutoDAO {
+export default class LivroDAO {
 
     constructor() {
         this.init();
@@ -13,16 +13,14 @@ export default class ProdutoDAO {
         {
             const conexao = await conectar(); //retorna uma conexão
             const sql = `
-            CREATE TABLE IF NOT EXISTS produto(
-                prod_codigo INT NOT NULL AUTO_INCREMENT,
-                prod_descricao VARCHAR(100) NOT NULL,
-                prod_precoCusto DECIMAL(10,2) NOT NULL DEFAULT 0,
-                prod_precoVenda DECIMAL(10,2) NOT NULL DEFAULT 0,
-                prod_dataValidade DATE,
-                prod_qtdEstoque DECIMAL(10,2) NOT NULL DEFAULT 0,
-                cat_codigo INT NOT NULL,
-                CONSTRAINT pk_produto PRIMARY KEY(prod_codigo),
-                CONSTRAINT fk_categoria FOREIGN KEY(cat_codigo) REFERENCES categoria(cat_codigo)
+            CREATE TABLE IF NOT EXISTS livro(
+                liv_codigo INT NOT NULL AUTO_INCREMENT,
+                liv_descricao VARCHAR(100) NOT NULL,
+                liv_preco DECIMAL(10,2) NOT NULL DEFAULT 0,
+                liv_qtdEstoque DECIMAL(10,2) NOT NULL DEFAULT 0,
+                aut_codigo INT NOT NULL,
+                CONSTRAINT pk_livro PRIMARY KEY(liv_codigo),
+                CONSTRAINT fk_autor FOREIGN KEY(aut_codigo) REFERENCES autor(aut_codigo)
             )
         `;
             await conexao.execute(sql);
@@ -34,27 +32,23 @@ export default class ProdutoDAO {
     }
 
 
-    async gravar(produto) {
-        if (produto instanceof Produto) {
-            const sql = `INSERT INTO produto(prod_descricao, prod_precoCusto,
-                prod_precoVenda, prod_dataValidade, prod_qtdEstoque, cat_codigo)
-                VALUES(?,?,?,?,?,?)`;
-            const parametros = [produto.descricao, produto.precoCusto, produto.precoVenda,
-            produto.dataValidade, produto.qtdEstoque, produto.categoria.codigo];
+    async gravar(livro) {
+        if (livro instanceof Livro) {
+            const sql = `INSERT INTO livro(liv_descricao, liv_preco, liv_qtdEstoque, aut_codigo)
+                VALUES(?,?,?,?)`;
+            const parametros = [livro.descricao, livro.preco, livro.qtdEstoque, livro.autor.codigo];
 
             const conexao = await conectar();
             const retorno = await conexao.execute(sql, parametros);
-            produto.codigo = retorno[0].insertId;
+            livro.codigo = retorno[0].insertId;
             global.poolConexoes.releaseConnection(conexao);
         }
     }
-    async atualizar(produto) {
-        if (produto instanceof Produto) {
-            const sql = `UPDATE produto SET prod_descricao = ?, prod_precoCusto = ?,
-            prod_precoVenda = ?, prod_dataValidade = ?, prod_qtdEstoque = ?, cat_codigo = ?
-            WHERE prod_codigo = ?`;
-            const parametros = [produto.descricao, produto.precoCusto, produto.precoVenda,
-            produto.dataValidade, produto.qtdEstoque, produto.categoria.codigo, produto.codigo];
+    async atualizar(livro) {
+        if (livro instanceof Livro) {
+            const sql = `UPDATE livro SET liv_descricao = ?, liv_preco = ?, liv_qtdEstoque = ?, aut_codigo = ?
+            WHERE liv_codigo = ?`;
+            const parametros = [livro.descricao, livro.preco, livro.qtdEstoque, livro.autor.codigo, livro.codigo];
 
             const conexao = await conectar();
             await conexao.execute(sql, parametros);
@@ -62,10 +56,10 @@ export default class ProdutoDAO {
         }
     }
 
-    async excluir(produto) {
-        if (produto instanceof Produto) {
-            const sql = `DELETE FROM produto WHERE prod_codigo = ?`;
-            const parametros = [produto.codigo];
+    async excluir(livro) {
+        if (livro instanceof Livro) {
+            const sql = `DELETE FROM livro WHERE liv_codigo = ?`;
+            const parametros = [livro.codigo];
             const conexao = await conectar();
             await conexao.execute(sql, parametros);
             global.poolConexoes.releaseConnection(conexao);
@@ -78,50 +72,46 @@ export default class ProdutoDAO {
         }
         //termo é um número
         const conexao = await conectar();
-        let listaProdutos = [];
+        let listaLivros = [];
         if (!isNaN(parseInt(termo))){
-            //consulta pelo código do produto
-            const sql = `SELECT p.prod_codigo, p.prod_descricao,
-              p.prod_precoCusto, p.prod_precoVenda, p.prod_dataValidade, 
-              p.prod_qtdEstoque, c.cat_codigo, c.cat_descricao
-              FROM produto p 
-              INNER JOIN categoria c ON p.cat_codigo = c.cat_codigo
-              WHERE p.prod_codigo = ?
-              ORDER BY p.prod_descricao ;              
+            //consulta pelo código do livro
+            const sql = `SELECT l.liv_codigo, l.liv_descricao,
+              l.liv_preco, l.liv_qtdEstoque, a.aut_codigo, a.aut_nome
+              FROM livro l
+              INNER JOIN autor a ON l.aut_codigo = a.aut_codigo
+              WHERE l.liv_codigo = ?
+              ORDER BY l.liv_descricao ;              
             `;
             const parametros=[termo];
             const [registros, campos] = await conexao.execute(sql,parametros);
             for (const registro of registros){
-                const produto = new Produto(registro.prod_codigo,registro.prod_descricao,
-                                            registro.prod_precoCusto,registro.prod_precoVenda,
-                                            registro.prod_dataValidade, registro.prod_qtdEstoque
+                const livro = new Livro(registro.liv_codigo,registro.liv_descricao,
+                                            registro.liv_preco, registro.liv_qtdEstoque
                                             );
-                listaProdutos.push(produto);
+                listaLivros.push(livro);
             }
         }
         else
         {
-            //consulta pela descrição do produto
-            const sql = `SELECT p.prod_codigo, p.prod_descricao,
-                         p.prod_precoCusto, p.prod_precoVenda, p.prod_dataValidade, 
-                         p.prod_qtdEstoque, c.cat_codigo, c.cat_descricao
-                         FROM produto p 
-                         INNER JOIN categoria c ON p.cat_codigo = c.cat_codigo
-                         WHERE p.prod_descricao like ?
-                         ORDER BY p.prod_descricao`;
+            //consulta pelo termo
+            const sql = `SELECT l.liv_codigo, l.liv_descricao,
+                         l.liv_preco, l.liv_qtdEstoque, a.aut_codigo, a.aut_nome
+                         FROM livro l
+                         INNER JOIN autor a ON l.aut_codigo = a.aut_codigo
+                         WHERE l.liv_descricao like ?
+                         ORDER BY l.liv_descricao`;
             const parametros=['%'+termo+'%'];
             const [registros, campos] = await conexao.execute(sql,parametros);
             for (const registro of registros){
-                const categoria = new Categoria(registro.cat_codigo, registro.cat_descricao)
-                const produto = new Produto(registro.prod_codigo,registro.prod_descricao,
-                                            registro.prod_precoCusto,registro.prod_precoVenda,
-                                            registro.prod_dataValidade, registro.prod_qtdEstoque,
-                                            categoria
+                const autor = new Autor(registro.aut_codigo, registro.aut_nome);
+                const livro = new Livro(registro.liv_codigo,registro.liv_descricao,
+                                            registro.liv_preco, registro.liv_qtdEstoque,
+                                            autor
                                             );
-                listaProdutos.push(produto);
+                listaLivros.push(livro);
             }
         }
 
-        return listaProdutos;
+        return listaLivros;
     }
 }

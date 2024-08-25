@@ -4,7 +4,7 @@ import LivroCtrl from "../Controle/livroCtrl.js";
 const livCtrl = new LivroCtrl();
 const rotaLivro = new Router();
 
-rotaProduto
+rotaLivro
 .get('/', livCtrl.consultar)
 .get('/:termo', livCtrl.consultar)
 .post('/', livCtrl.gravar)

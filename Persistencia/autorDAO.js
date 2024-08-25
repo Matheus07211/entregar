@@ -1,7 +1,7 @@
-import Categoria from "../Modelo/categoria.js";
+import Autor from "../Modelo/autor.js";
 import conectar from "./conexao.js";
 //DAO = Data Access Object -> Objeto de acesso aos dados
-export default class CategoriaDAO{
+export default class AutorDAO{
 
     constructor() {
         this.init();
@@ -12,10 +12,10 @@ export default class CategoriaDAO{
         {
             const conexao = await conectar(); //retorna uma conexão
             const sql = `
-                CREATE TABLE IF NOT EXISTS categoria(
-                    cat_codigo INT NOT NULL AUTO_INCREMENT,
-                    cat_descricao VARCHAR(100) NOT NULL,
-                    CONSTRAINT pk_categoria PRIMARY KEY(cat_codigo)
+                CREATE TABLE IF NOT EXISTS autor(
+                    aut_codigo INT NOT NULL AUTO_INCREMENT,
+                    aut_nome VARCHAR(100) NOT NULL,
+                    CONSTRAINT pk_autor PRIMARY KEY(aut_codigo)
                 );`;
             await conexao.execute(sql);
             await conexao.release();
@@ -24,31 +24,31 @@ export default class CategoriaDAO{
             console.log("Não foi possível iniciar o banco de dados: " + e.message);
         }
     }
-    async gravar(categoria){
-        if (categoria instanceof Categoria){
-            const sql = "INSERT INTO categoria(cat_descricao) VALUES(?)"; 
-            const parametros = [categoria.descricao];
+    async gravar(autor){
+        if (autor instanceof Autor){
+            const sql = "INSERT INTO autor(aut_nome) VALUES(?)"; 
+            const parametros = [autor.nome];
             const conexao = await conectar(); //retorna uma conexão
             const retorno = await conexao.execute(sql,parametros); //prepara a sql e depois executa
-            categoria.codigo = retorno[0].insertId;
+            autor.codigo = retorno[0].insertId;
             global.poolConexoes.releaseConnection(conexao);
         }
     }
 
-    async atualizar(categoria){
-        if (categoria instanceof Categoria){
-            const sql = "UPDATE categoria SET cat_descricao = ? WHERE cat_codigo = ?"; 
-            const parametros = [categoria.descricao, categoria.codigo];
+    async atualizar(autor){
+        if (autor instanceof Autor){
+            const sql = "UPDATE autor SET aut_nome = ? WHERE aut_codigo = ?"; 
+            const parametros = [autor.nome, autor.codigo];
             const conexao = await conectar(); //retorna uma conexão
             await conexao.execute(sql,parametros); //prepara a sql e depois executa
             global.poolConexoes.releaseConnection(conexao);
         }
     }
 
-    async excluir(categoria){
-        if (categoria instanceof Categoria){
-            const sql = "DELETE FROM categoria WHERE cat_codigo = ?"; 
-            const parametros = [categoria.codigo];
+    async excluir(autor){
+        if (autor instanceof Autor){
+            const sql = "DELETE FROM autor WHERE aut_codigo = ?"; 
+            const parametros = [autor.codigo];
             const conexao = await conectar(); //retorna uma conexão
             await conexao.execute(sql,parametros); //prepara a sql e depois executa
             global.poolConexoes.releaseConnection(conexao);
@@ -60,8 +60,8 @@ export default class CategoriaDAO{
         let parametros=[];
         //é um número inteiro?
         if (!isNaN(parseInt(parametroConsulta))){
-            //consultar pelo código da categoria
-            sql='SELECT * FROM categoria WHERE cat_codigo = ? order by cat_descricao';
+            //consultar pelo código do autor
+            sql='SELECT * FROM autor WHERE aut_codigo = ? order by aut_nome';
             parametros = [parametroConsulta];
         }
         else{
@@ -69,25 +69,25 @@ export default class CategoriaDAO{
             if (!parametroConsulta){
                 parametroConsulta = '';
             }
-            sql = "SELECT * FROM categoria WHERE cat_descricao like ?";
+            sql = "SELECT * FROM autor WHERE aut_nome like ?";
             parametros = ['%'+parametroConsulta+'%'];
         }
         const conexao = await conectar();
         const [registros, campos] = await conexao.execute(sql,parametros);
-        let listaCategorias = [];
+        let listaAutores = [];
         for (const registro of registros){
-            const categoria = new Categoria(registro.cat_codigo,registro.cat_descricao);
-            listaCategorias.push(categoria);
+            const autor = new Autor(registro.aut_codigo,registro.aut_nome);
+            listaAutores.push(autor);
         }
-        return listaCategorias;
+        return listaAutores;
     }
 
-    async possuiProdutos(categoria){
-        if (categoria instanceof Categoria){
-            const sql = `SELECT count(*) FROM produto p
-                         INNER JOIN categoria c ON p.cat_codigo = c.cat_codigo
-                         WHERE c.cat_codigo = ?`;
-            const parametros = [categoria.codigo];
+    async possuiLivros(autor){
+        if (autor instanceof Autor){
+            const sql = `SELECT count(*) FROM livro l
+                         INNER JOIN autor a ON l.aut_codigo = a.aut_codigo
+                         WHERE a.aut_codigo = ?`;
+            const parametros = [autor.codigo];
             const [registros] = await global.poolConexoes.execute(sql, parametros);
             return registros[0].qtd > 0;
         }

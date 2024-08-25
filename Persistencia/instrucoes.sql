@@ -5,7 +5,7 @@ USE sistema;
 CREATE TABLE autor(
     aut_codigo INT NOT NULL AUTO_INCREMENT,
     aut_nome VARCHAR(100) NOT NULL,
-    CONSTRAINT pk_categoria PRIMARY KEY(aut_codigo)
+    CONSTRAINT pk_autor PRIMARY KEY(aut_codigo)
 );
 
 CREATE TABLE livro(
