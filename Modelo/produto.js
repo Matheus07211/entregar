@@ -1,4 +1,4 @@
-import ProdutoDAO from "../Persistencia/produtoDAO.js";
+import ProdutoDAO from "../Persistencia/livroDAO.js";
 import Categoria from "./categoria.js"
 
 export default class Produto{
