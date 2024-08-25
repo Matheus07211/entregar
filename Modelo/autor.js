@@ -40,28 +40,28 @@ export default class Autor {
 
     //camada de modelo acessa a camada de persistencia
     async gravar(){
-        const autDAO = new autorDAO();
+        const autDAO = new AutorDAO();
         await autDAO.gravar(this);
     }
 
     async excluir(){
-        const autDAO = new autorDAO();
+        const autDAO = new AutorDAO();
         await autDAO.excluir(this);
     }
 
     async atualizar(){
-        const autDAO = new autorDAO();
+        const autDAO = new AutorDAO();
         await autDAO.atualizar(this);
 
     }
 
     async consultar(parametro){
-        const autDAO = new autorDAO();
+        const autDAO = new AutorDAO();
         return await autDAO.consultar(parametro);
     }
 
     async possuiLivros(){
-        const autDAO = new autorDAO();
+        const autDAO = new AutorDAO();
         return await autDAO.possuiLivros(this);
     }
 }

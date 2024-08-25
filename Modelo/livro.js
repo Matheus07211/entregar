@@ -73,22 +73,22 @@ export default class Livro{
 
      //camada de modelo acessa a camada de persistencia
      async gravar(){
-        const livDAO = new LivroDAO();
+        const livDAO = new livroDAO();
         await livDAO.gravar(this);
      }
  
      async excluir(){
-        const livDAO = new LivroDAO();
+        const livDAO = new livroDAO();
         await livDAO.excluir(this);
      }
  
      async alterar(){
-        const livDAO = new LivroDAO();
+        const livDAO = new livroDAO();
         await livDAO.atualizar(this);
      }
  
      async consultar(termo){
-        const livDAO = new LivroDAO();
+        const livDAO = new livroDAO();
         return await livDAO.consultar(termo);
      }
 
