@@ -81,4 +81,16 @@ export default class CategoriaDAO{
         }
         return listaCategorias;
     }
+
+    async possuiProdutos(categoria){
+        if (categoria instanceof Categoria){
+            const sql = `SELECT count(*) FROM produto p
+                         INNER JOIN categoria c ON p.cat_codigo = c.cat_codigo
+                         WHERE c.cat_codigo = ?`;
+            const parametros = [categoria.codigo];
+            const [registros] = await global.poolConexoes.execute(sql, parametros);
+            return registros[0].qtd > 0;
+        }
+    }
+
 }
